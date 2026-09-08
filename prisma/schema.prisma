@@ -8,9 +8,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  sessionId String   @unique
-  createdAt DateTime @default(now())
+  id           Int       @id @default(autoincrement())
+  sessionId    String    @unique
+  email        String?   @unique
+  name         String?
+  passwordHash String?
+  role         String    @default("user")
+  suspended    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
 
   evaluations PasswordEvaluation[]
   logs        SystemLog[]
@@ -18,7 +23,7 @@ model User {
 
 model PasswordRule {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String   @unique
   description String?
   weight      Int      @default(1)
   active      Boolean  @default(true)
@@ -31,6 +36,11 @@ model PasswordEvaluation {
   passwordHash  String
   strengthLevel String
   score         Int
+  entropy       Float?
+  mlClass       String?
+  mlConfidence  Float?
+  mlScore       Int?
+  ruleScore     Int?
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -56,12 +66,4 @@ model SystemLog {
 
   @@index([userId])
   @@index([status])
-}
-
-model Admin {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  passwordHash String
-  role         String   @default("admin")
-  createdAt    DateTime @default(now())
 }
