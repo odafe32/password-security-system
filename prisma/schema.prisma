@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique
+  createdAt DateTime @default(now())
+
+  evaluations PasswordEvaluation[]
+  logs        SystemLog[]
+}
+
+model PasswordRule {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  weight      Int      @default(1)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model PasswordEvaluation {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  passwordHash  String
+  strengthLevel String
+  score         Int
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WeakPassword {
+  id        Int      @id @default(autoincrement())
+  password  String   @unique
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model SystemLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  activity  String
+  status    String   @default("success")
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
